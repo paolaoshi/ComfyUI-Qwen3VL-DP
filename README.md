@@ -107,6 +107,13 @@ ComfyUI/models/prompt_generator/
 | Qwen3-VL-8B | ~16GB | ~8GB |
 | Qwen3-VL-32B | ~64GB | ~32GB |
 
+### 📞 联系方式 📞 
+- 作者：@炮老师的小课堂
+- 版本：v1.0.1
+- 更新日期：2025年
+- 作者微信：paolaoshiAICG
+
+![alt text](功能展示/123.png)
 
 ## 致谢
 
