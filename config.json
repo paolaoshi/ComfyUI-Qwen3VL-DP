@@ -1,0 +1,192 @@
+{
+    "_preset_prompts": [
+        "提示词风格 - 标签",
+        "提示词风格 - 简单",
+        "提示词风格 - 详细",
+        "提示词风格 - 极致详细",
+        "提示词风格 - 电影感"
+    ],
+    "_system_prompts": {
+        "提示词风格 - 标签": "你的任务是为文生图AI生成一个简洁的逗号分隔标签列表，仅基于图像中的视觉信息。限制输出最多50个唯一标签。严格描述视觉元素，如主体、服装、环境、颜色、光照和构图。不要包含抽象概念、解释、营销术语或技术术语。目标是一个简洁的视觉描述符列表。避免重复标签。",
+        "提示词风格 - 简单": "分析图像并生成一个简单的单句文生图提示词。简洁地描述主要主体和场景。",
+        "提示词风格 - 详细": "基于图像生成一个详细的艺术性文生图提示词。将主体、动作、环境、光照和整体氛围组合成一个连贯的段落，约2-3句话。关注关键视觉细节。",
+        "提示词风格 - 极致详细": "从图像生成一个极其详细和描述性的文生图提示词。创建一个丰富的段落，详细阐述主体的外观、服装纹理、具体背景元素、光线的质量和颜色、阴影以及整体氛围。追求高度描述性和沉浸式的提示词。",
+        "提示词风格 - 电影感": "作为一个大师级提示词工程师。为图像生成AI创建一个高度详细和富有感染力的提示词。描述主体、姿势、环境、光照、情绪和艺术风格（如照片写实、电影感、绘画风格）。将所有元素编织成一个自然语言段落，专注于视觉冲击力。"
+    },
+    "Qwen3-VL-2B-Instruct": {
+        "repo_id": "Qwen/Qwen3-VL-2B-Instruct",
+        "default": true,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 4.0,
+            "8bit": 2.5,
+            "4bit": 1.5
+        }
+    },
+    "Qwen3-VL-2B-Thinking": {
+        "repo_id": "Qwen/Qwen3-VL-2B-Thinking",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 4.0,
+            "8bit": 2.5,
+            "4bit": 1.5
+        }
+    },
+    "Qwen3-VL-2B-Instruct-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-2B-Instruct-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 2.5
+        }
+    },
+    "Qwen3-VL-2B-Thinking-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-2B-Thinking-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 2.5
+        }
+    },
+    "Qwen3-VL-4B-Instruct": {
+        "repo_id": "Qwen/Qwen3-VL-4B-Instruct",
+        "default": true,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 6.0,
+            "8bit": 3.5,
+            "4bit": 2.0
+        }
+    },
+    "Qwen3-VL-4B-Thinking": {
+        "repo_id": "Qwen/Qwen3-VL-4B-Thinking",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 6.0,
+            "8bit": 3.5,
+            "4bit": 2.0
+        }
+    },
+    "Qwen3-VL-4B-Instruct-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-4B-Instruct-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 2.5
+        }
+    },
+    "Qwen3-VL-4B-Thinking-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-4B-Thinking-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 2.5
+        }
+    },
+    "Qwen3-VL-8B-Instruct": {
+        "repo_id": "Qwen/Qwen3-VL-8B-Instruct",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 12.0,
+            "8bit": 7.0,
+            "4bit": 4.5
+        }
+    },
+    "Qwen3-VL-8B-Thinking": {
+        "repo_id": "Qwen/Qwen3-VL-8B-Thinking",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 12.0,
+            "8bit": 7.0,
+            "4bit": 4.5
+        }
+    },
+    "Qwen3-VL-8B-Instruct-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-8B-Instruct-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 7.5
+        }
+    },
+    "Qwen3-VL-8B-Thinking-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-8B-Thinking-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 7.5
+        }
+    },
+    "Qwen3-VL-32B-Instruct": {
+        "repo_id": "Qwen/Qwen3-VL-32B-Instruct",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 28.0,
+            "8bit": 14.0,
+            "4bit": 8.5
+        }
+    },
+    "Qwen3-VL-32B-Thinking": {
+        "repo_id": "Qwen/Qwen3-VL-32B-Thinking",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 28.0,
+            "8bit": 14.0,
+            "4bit": 8.5
+        }
+    },
+    "Qwen3-VL-32B-Instruct-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-32B-Instruct-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 24.0
+        }
+    },
+    "Qwen3-VL-32B-Thinking-FP8": {
+        "repo_id": "Qwen/Qwen3-VL-32B-Thinking-FP8",
+        "default": false,
+        "quantized": true,
+        "vram_requirement": {
+            "full": 24.0
+        }
+    },
+    "Qwen2.5-VL-3B-Instruct": {
+        "repo_id": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 6.0,
+            "8bit": 3.5,
+            "4bit": 2.0
+        }
+    },
+    "Qwen2.5-VL-7B-Instruct": {
+        "repo_id": "Qwen/Qwen2.5-VL-7B-Instruct",
+        "default": false,
+        "quantized": false,
+        "vram_requirement": {
+            "full": 15.0,
+            "8bit": 8.5,
+            "4bit": 5.0
+        }
+    },
+    "Huihui-Qwen3-VL-8B-Instruct-Abliterated": {
+        "repo_id": "huihui-ai/Huihui-Qwen3-VL-8B-Instruct-abliterated",
+        "default": false,
+        "quantized": false,
+        "abliterated": true,
+        "vram_requirement": {
+            "full": 12.0,
+            "8bit": 7.0,
+            "4bit": 4.5
+        },
+        "warning": "此模型已移除安全过滤，可能生成敏感内容。仅用于研究和测试环境。"
+    }
+}

@@ -1,0 +1,28 @@
+# ComfyUI-Qwen3VL-DP 依赖项
+# 注意: Qwen3-VL 模型需要 transformers >= 4.57.0
+
+transformers>=4.57.0
+torch>=2.0.0
+huggingface-hub
+psutil
+numpy
+Pillow
+opencv-python
+bitsandbytes
+accelerate
+
+# 可选: 用于更好的性能
+# flash-attn>=2.0.0  # 需要 CUDA 和兼容的 GPU (计算能力 >= 8.0)
+
+# 可选: 用于更快的视频加载
+# qwen-vl-utils[decord]>=0.0.14
+
+
+
+
+
+
+
+
+
+
