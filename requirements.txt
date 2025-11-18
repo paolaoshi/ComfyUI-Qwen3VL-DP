@@ -4,6 +4,7 @@
 transformers>=4.57.0
 torch>=2.0.0
 huggingface-hub
+modelscope
 psutil
 numpy
 Pillow

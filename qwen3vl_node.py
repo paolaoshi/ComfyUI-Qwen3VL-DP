@@ -8,9 +8,18 @@ from PIL import Image
 from enum import Enum
 from pathlib import Path
 from transformers import AutoModelForImageTextToText, AutoProcessor, AutoTokenizer, BitsAndBytesConfig
-from huggingface_hub import snapshot_download
+from huggingface_hub import snapshot_download as hf_snapshot_download
 import folder_paths
 import gc
+
+# 尝试导入 ModelScope，如果不存在则使用 HuggingFace
+try:
+    from modelscope.hub.snapshot_download import snapshot_download as ms_snapshot_download
+    MODELSCOPE_AVAILABLE = True
+except ImportError:
+    ms_snapshot_download = None
+    MODELSCOPE_AVAILABLE = False
+    print("[Qwen3VL] ⚠️ ModelScope 未安装，ModelScope 模型将无法下载。请运行: pip install modelscope")
 
 NODE_DIR = Path(__file__).parent
 CONFIG_PATH = NODE_DIR / "config.json"
@@ -184,12 +193,14 @@ class ModelDownloader:
         
         模型会直接下载到 ComfyUI/models/prompt_generator/ 目录
         如果模型已存在，则直接使用，不会重复下载
+        支持 HuggingFace 和 ModelScope 两种来源
         """
         model_info = self.configs.get(model_name)
         if not model_info:
             raise ValueError(f"模型 '{model_name}' 未在配置中找到")
 
         repo_id = model_info['repo_id']
+        source = model_info.get('source', 'huggingface')  # 默认使用 HuggingFace
         model_folder_name = repo_id.split('/')[-1]
         model_path = self.models_dir / model_folder_name
         
@@ -208,27 +219,48 @@ class ModelDownloader:
             else:
                 print(f"⚠️ 模型目录存在但文件不完整，将重新下载...")
         
-        print(f"📥 正在下载模型 '{model_name}' 到 {model_path}...")
+        # 检查 ModelScope 模型是否需要安装依赖
+        if source == 'modelscope' and not MODELSCOPE_AVAILABLE:
+            raise RuntimeError(
+                f"模型 '{model_name}' 来自 ModelScope，但 ModelScope 库未安装。\n"
+                f"请运行以下命令安装：\n"
+                f"pip install modelscope\n"
+                f"或者使用 HuggingFace 镜像站手动下载模型到: {model_path}"
+            )
+        
+        print(f"📥 正在从 {source.upper()} 下载模型 '{model_name}' 到 {model_path}...")
         print(f"📁 目标路径: {model_path}")
         print("⏳ 提示：首次下载可能需要较长时间，请耐心等待...")
         
         # 创建模型目录
         model_path.mkdir(parents=True, exist_ok=True)
         
+        # 根据来源选择下载函数
+        if source == 'modelscope':
+            snapshot_download_func = ms_snapshot_download
+            download_kwargs = {
+                "model_id": repo_id,
+                "cache_dir": str(model_path.parent),
+                "local_dir": str(model_path),
+            }
+            source_url = f"https://modelscope.cn/models/{repo_id}"
+        else:
+            snapshot_download_func = hf_snapshot_download
+            download_kwargs = {
+                "repo_id": repo_id,
+                "local_dir": str(model_path),
+                "local_dir_use_symlinks": False,
+                "ignore_patterns": ["*.md", "*.txt", ".gitattributes"],
+                "resume_download": True,
+                "max_workers": 4
+            }
+            source_url = f"https://huggingface.co/{repo_id}"
+        
         # 添加重试机制，解决网络连接问题
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                # 使用 local_dir 参数直接下载到目标目录
-                # local_dir_use_symlinks=False 确保文件被复制而不是创建符号链接
-                downloaded_path = snapshot_download(
-                    repo_id=repo_id,
-                    local_dir=str(model_path),
-                    local_dir_use_symlinks=False,  # 不使用符号链接，直接复制文件
-                    ignore_patterns=["*.md", "*.txt", ".gitattributes"],  # 忽略不必要的文件
-                    resume_download=True,  # 支持断点续传
-                    max_workers=4  # 限制并发下载数，避免连接过多
-                )
+                downloaded_path = snapshot_download_func(**download_kwargs)
                 print(f"✅ 模型 '{model_name}' 下载完成！")
                 print(f"📁 模型已保存到: {model_path}")
                 return str(model_path)
@@ -239,14 +271,20 @@ class ModelDownloader:
                     time.sleep(5)
                 else:
                     print(f"❌ 下载失败，已重试 {max_retries} 次")
-                    raise RuntimeError(
-                        f"模型下载失败: {str(e)}\n"
-                        f"建议：\n"
-                        f"1. 检查网络连接是否正常\n"
-                        f"2. 设置 HF_ENDPOINT 环境变量使用镜像源（如：https://hf-mirror.com）\n"
-                        f"3. 手动下载模型到: {model_path}\n"
-                        f"   从 https://huggingface.co/{repo_id} 下载所有文件到该目录"
-                    )
+                    error_msg = f"模型下载失败: {str(e)}\n建议：\n"
+                    if source == 'modelscope':
+                        error_msg += (
+                            f"1. 检查网络连接是否正常\n"
+                            f"2. 确保已安装 ModelScope: pip install modelscope\n"
+                            f"3. 手动从 {source_url} 下载模型到: {model_path}\n"
+                        )
+                    else:
+                        error_msg += (
+                            f"1. 检查网络连接是否正常\n"
+                            f"2. 设置 HF_ENDPOINT 环境变量使用镜像源（如：https://hf-mirror.com）\n"
+                            f"3. 手动从 {source_url} 下载模型到: {model_path}\n"
+                        )
+                    raise RuntimeError(error_msg)
 
 class Qwen3VL_Advanced:
     """Qwen3-VL 高级节点 - 支持图像和视频理解"""

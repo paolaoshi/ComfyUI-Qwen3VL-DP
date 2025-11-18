@@ -177,6 +177,19 @@
             "4bit": 5.0
         }
     },
+    "Huihui-Qwen3-VL-4B-Instruct-Abliterated": {
+        "repo_id": "fireicewolf/Huihui-Qwen3-VL-4B-Instruct-abliterated",
+        "source": "modelscope",
+        "default": false,
+        "quantized": false,
+        "abliterated": true,
+        "vram_requirement": {
+            "full": 6.0,
+            "8bit": 3.5,
+            "4bit": 2.0
+        },
+        "warning": "此模型已移除安全过滤，可能生成敏感内容。仅用于研究和测试环境。"
+    },
     "Huihui-Qwen3-VL-8B-Instruct-Abliterated": {
         "repo_id": "huihui-ai/Huihui-Qwen3-VL-8B-Instruct-abliterated",
         "default": false,

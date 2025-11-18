@@ -1,5 +1,29 @@
 # ComfyUI-Qwen3VL-DP 修改说明
 
+## 最新修改 (2024年11月18日)
+
+### 🌐 新增 ModelScope 模型支持
+- ✅ **添加 ModelScope 下载支持**：支持从 ModelScope 下载社区模型
+- ✅ **新增 4B 破限模型**：Huihui-Qwen3-VL-4B-Instruct-Abliterated
+  - 来源：ModelScope (fireicewolf/Huihui-Qwen3-VL-4B-Instruct-abliterated)
+  - 显存需求：6GB (FP16) / 3.5GB (8-bit) / 2GB (4-bit)
+  - 基于 Qwen3-VL-4B 的 abliterated 版本
+- ✅ **自动源选择**：根据模型配置自动选择 HuggingFace 或 ModelScope
+- ✅ **依赖管理**：自动检测 ModelScope 库，未安装时提供友好提示
+
+### 技术实现
+```python
+# 支持多源下载
+if source == 'modelscope':
+    from modelscope.hub.snapshot_download import snapshot_download
+    # ModelScope 下载逻辑
+else:
+    from huggingface_hub import snapshot_download
+    # HuggingFace 下载逻辑
+```
+
+---
+
 ## 修改日期
 2024年11月18日
 
@@ -7,6 +31,7 @@
 对整个项目进行了大修正，主要涉及：
 1. 随机种子控制和模型加载默认行为的优化
 2. 主节点集成额外选项功能，支持更灵活的提示词增强
+3. 新增 ModelScope 模型下载支持
 
 ## 详细修改内容
 
