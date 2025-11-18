@@ -386,15 +386,19 @@ class Qwen3VL_Advanced:
                 "🚫 重复惩罚": ("FLOAT", {"default": 1.2, "min": 0.0, "max": 2.0, "step": 0.01}),
                 "🎬 视频帧数": ("INT", {"default": 16, "min": 1, "max": 64, "step": 1}),
                 "💻 设备选择": (["auto", "cuda", "cpu", "mps"], {"default": "auto"}),
-                "🔄 保持模型加载": ("BOOLEAN", {"default": True}),
+                "🔄 保持模型加载": ("BOOLEAN", {"default": False}),
                 "🎲 随机种子": ("INT", {"default": 1, "min": 1, "max": 0xFFFFFFFFFFFFFFFF}),
+                "🎮 种子控制": (["随机", "固定"], {"default": "随机"}),
             },
             "optional": {
                 "🖼️ 图像1": ("IMAGE",),
                 "🖼️ 图像2": ("IMAGE",),
                 "🖼️ 图像3": ("IMAGE",),
                 "🖼️ 图像4": ("IMAGE",),
-                "🎥 视频": ("IMAGE",)
+                "🎥 视频": ("IMAGE",),
+                "🎯 Qwen3VL额外选项": ("QWEN3VL_EXTRA_OPTIONS", {
+                    "tooltip": "可选的Qwen3VL额外选项，连接Qwen3VL额外选项节点"
+                }),
             }
         }
 
@@ -425,8 +429,15 @@ class Qwen3VL_Advanced:
         图像4 = kwargs.get("🖼️ 图像4")
         视频 = kwargs.get("🎥 视频")
         保持模型加载 = kwargs.get("🔄 保持模型加载", True)
+        种子控制 = kwargs.get("🎮 种子控制", "随机")
+        extra_options = kwargs.get("🎯 Qwen3VL额外选项", None)
         start_time = time.time()
-        torch.manual_seed(随机种子)
+        
+        # 根据种子控制设置随机种子
+        if 种子控制 == "固定":
+            torch.manual_seed(随机种子)
+        else:
+            torch.manual_seed(int(time.time()))
         
         try:
             self.load_model(模型名称, 量化级别, 设备选择)
@@ -436,6 +447,15 @@ class Qwen3VL_Advanced:
             prompt_text = SYSTEM_PROMPTS.get(预设提示词, 预设提示词)
             if 自定义提示词 and 自定义提示词.strip():
                 prompt_text = 自定义提示词.strip()
+            
+            # 应用Qwen3VL额外选项生成增强提示词（如果有的话）
+            if extra_options:
+                try:
+                    import qwen3vl_extra_options
+                    prompt_text = qwen3vl_extra_options.Qwen3VL_ExtraOptions.build_enhanced_prompt(prompt_text, extra_options)
+                    print(f"✅ 已应用Qwen3VL额外选项增强提示词")
+                except (ImportError, AttributeError) as e:
+                    print(f"⚠️ 警告: 无法导入Qwen3VL额外选项模块 ({e})，使用基础提示词")
             
             # 构建对话消息
             conversation = [{"role": "user", "content": []}]
@@ -685,13 +705,16 @@ class Qwen3VL_Chat:
                 "📏 最大长度": ("INT", {"default": 2048, "min": 64, "max": 4096, "step": 16}),
                 "🎲 随机种子": ("INT", {"default": 0, "min": 0, "max": 0xFFFFFFFFFFFFFFFF}),
                 "🎮 种子控制": (["随机", "固定"], {"default": "随机"}),
-                "🔄 保持模型加载": ("BOOLEAN", {"default": True}),
+                "🔄 保持模型加载": ("BOOLEAN", {"default": False}),
             },
             "optional": {
                 "🖼️ 图像1": ("IMAGE",),
                 "🖼️ 图像2": ("IMAGE",),
                 "🖼️ 图像3": ("IMAGE",),
                 "🖼️ 图像4": ("IMAGE",),
+                "🎯 Qwen3VL额外选项": ("QWEN3VL_EXTRA_OPTIONS", {
+                    "tooltip": "可选的Qwen3VL额外选项，连接Qwen3VL额外选项节点"
+                }),
             }
         }
 
@@ -717,6 +740,7 @@ class Qwen3VL_Chat:
         图像2 = kwargs.get("🖼️ 图像2")
         图像3 = kwargs.get("🖼️ 图像3")
         图像4 = kwargs.get("🖼️ 图像4")
+        extra_options = kwargs.get("🎯 Qwen3VL额外选项", None)
         # 处理Top-P参数（兼容新旧版本）
         top_p = kwargs.get("🎯 Top-P", 0.90)
         
@@ -732,14 +756,26 @@ class Qwen3VL_Chat:
             self.load_model(模型名称, 量化级别, "auto")
             effective_device = self.current_device
             
+            # 处理系统角色定义，应用额外选项
+            system_prompt = 系统角色定义.strip() if 系统角色定义 else ""
+            
+            # 应用Qwen3VL额外选项增强系统提示词（如果有的话）
+            if extra_options and system_prompt:
+                try:
+                    import qwen3vl_extra_options
+                    system_prompt = qwen3vl_extra_options.Qwen3VL_ExtraOptions.build_enhanced_prompt(system_prompt, extra_options)
+                    print(f"✅ 已应用Qwen3VL额外选项增强系统角色")
+                except (ImportError, AttributeError) as e:
+                    print(f"⚠️ 警告: 无法导入Qwen3VL额外选项模块 ({e})，使用基础系统角色")
+            
             # 构建对话消息，先添加系统角色定义
             conversation = []
             
             # 添加系统角色定义（如果提供）
-            if 系统角色定义 and 系统角色定义.strip():
+            if system_prompt:
                 conversation.append({
                     "role": "system",
-                    "content": [{"type": "text", "text": 系统角色定义.strip()}]
+                    "content": [{"type": "text", "text": system_prompt}]
                 })
             
             # 添加用户消息

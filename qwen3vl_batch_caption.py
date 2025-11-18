@@ -83,6 +83,7 @@ class Qwen3VL_Batch_Caption:
                 "🎯 核采样参数": ("FLOAT", {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "🔄 保持模型加载": ("BOOLEAN", {"default": True}),
                 "🎲 随机种子": ("INT", {"default": 1, "min": 1, "max": 0xFFFFFFFFFFFFFFFF}),
+                "🎮 种子控制": (["随机", "固定"], {"default": "随机"}),
                 "📝 前缀文本": ("STRING", {
                     "default": "",
                     "multiline": False,
@@ -183,6 +184,7 @@ class Qwen3VL_Batch_Caption:
         核采样参数 = kwargs.get("🎯 核采样参数")
         保持模型加载 = kwargs.get("🔄 保持模型加载")
         随机种子 = kwargs.get("🎲 随机种子")
+        种子控制 = kwargs.get("🎮 种子控制", "随机")
         前缀文本 = kwargs.get("📝 前缀文本", "").strip()
         后缀文本 = kwargs.get("📌 后缀文本", "").strip()
         重命名文件 = kwargs.get("🔄 重命名文件", False)
@@ -190,8 +192,12 @@ class Qwen3VL_Batch_Caption:
         起始编号 = kwargs.get("🔢 起始编号", 1)
         强制覆盖 = kwargs.get("🔄 强制覆盖", False)
         
+        # 如果种子控制是随机，默认强制覆盖
+        if 种子控制 == "随机":
+            强制覆盖 = True
+        
         # Qwen3VL 额外选项（可选）
-        qwen3vl_extra_options = kwargs.get("🎯 Qwen3VL额外选项", None)
+        extra_options = kwargs.get("🎯 Qwen3VL额外选项", None)
         
         # 验证输入文件夹
         if not 输入文件夹 or not os.path.exists(输入文件夹):
@@ -209,13 +215,13 @@ class Qwen3VL_Batch_Caption:
             base_prompt = 自定义提示词
         
         # 应用Qwen3VL额外选项生成增强提示词（如果有的话）
-        if qwen3vl_extra_options:
+        if extra_options:
             # 导入Qwen3VL额外选项节点的静态方法
             try:
-                from .qwen3vl_extra_options import Qwen3VL_ExtraOptions
-                prompt_text = Qwen3VL_ExtraOptions.build_enhanced_prompt(base_prompt, qwen3vl_extra_options)
-            except ImportError:
-                print("⚠️ 警告: 无法导入Qwen3VL额外选项模块，使用基础提示词")
+                import qwen3vl_extra_options
+                prompt_text = qwen3vl_extra_options.Qwen3VL_ExtraOptions.build_enhanced_prompt(base_prompt, extra_options)
+            except (ImportError, AttributeError) as e:
+                print(f"⚠️ 警告: 无法导入Qwen3VL额外选项模块 ({e})，使用基础提示词")
                 prompt_text = base_prompt
         else:
             prompt_text = base_prompt
@@ -243,8 +249,8 @@ class Qwen3VL_Batch_Caption:
         print(f"💭 基础提示词: {base_prompt}")
         
         # 显示Qwen3VL额外选项状态
-        if qwen3vl_extra_options:
-            enabled_options = [key for key, value in qwen3vl_extra_options.items() if value]
+        if extra_options:
+            enabled_options = [key for key, value in extra_options.items() if value]
             if enabled_options:
                 print(f"🎯 Qwen3VL额外选项: 已启用 ({len(enabled_options)}个)")
                 print(f"   启用的选项: {', '.join(enabled_options)}")
@@ -253,6 +259,7 @@ class Qwen3VL_Batch_Caption:
         else:
             print(f"🎯 Qwen3VL额外选项: 未连接")
         
+        print(f"🎮 种子控制: {种子控制}")
         print(f"🔄 强制覆盖: {'是' if 强制覆盖 else '否'}")
         print(f"📋 找到的图像文件:")
         for i, file in enumerate(image_files, 1):
@@ -273,9 +280,17 @@ class Qwen3VL_Batch_Caption:
         # 创建进度条
         pbar = comfy.utils.ProgressBar(len(image_files))
         
+        # 根据种子控制设置随机种子
+        if 种子控制 == "固定":
+            torch.manual_seed(随机种子)
+        
         # 处理每张图像
         当前编号 = 起始编号
         for idx, filename in enumerate(image_files):
+            # 如果是随机模式，每次处理前都设置新的随机种子
+            if 种子控制 == "随机":
+                torch.manual_seed(int(time.time() * 1000) + idx)
+            
             try:
                 image_path = os.path.join(输入文件夹, filename)
                 base_name = os.path.splitext(filename)[0]

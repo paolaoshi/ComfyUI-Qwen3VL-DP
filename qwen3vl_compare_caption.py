@@ -94,6 +94,7 @@ class Qwen3VL_Compare_Caption:
                 "🎯 核采样参数": ("FLOAT", {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "🔄 保持模型加载": ("BOOLEAN", {"default": True}),
                 "🎲 随机种子": ("INT", {"default": 1, "min": 1, "max": 0xFFFFFFFFFFFFFFFF}),
+                "🎮 种子控制": (["随机", "固定"], {"default": "随机"}),
                 "📝 前缀文本": ("STRING", {
                     "default": "",
                     "multiline": False,
@@ -248,9 +249,14 @@ class Qwen3VL_Compare_Caption:
         核采样参数 = kwargs.get("🎯 核采样参数")
         保持模型加载 = kwargs.get("🔄 保持模型加载")
         随机种子 = kwargs.get("🎲 随机种子")
+        种子控制 = kwargs.get("🎮 种子控制", "随机")
         前缀文本 = kwargs.get("📝 前缀文本", "").strip()
         后缀文本 = kwargs.get("📌 后缀文本", "").strip()
         强制覆盖 = kwargs.get("🔄 强制覆盖", False)
+        
+        # 如果种子控制是随机，默认强制覆盖
+        if 种子控制 == "随机":
+            强制覆盖 = True
         
         # 验证输入文件夹
         if not A文件夹 or not os.path.exists(A文件夹):
@@ -288,6 +294,7 @@ class Qwen3VL_Compare_Caption:
         print(f"🖼️ 图像对数量: {len(file_pairs)}")
         print(f"🌍 语言选择: {语言选择}")
         print(f"💭 使用提示词: {'自定义' if 自定义提示词 else '内置'}")
+        print(f"🎮 种子控制: {种子控制}")
         print(f"🔄 强制覆盖: {'是' if 强制覆盖 else '否'}")
         print(f"📋 找到的图像对:")
         for i, (file_a, file_b) in enumerate(file_pairs, 1):
@@ -308,8 +315,16 @@ class Qwen3VL_Compare_Caption:
         # 创建进度条
         pbar = comfy.utils.ProgressBar(len(file_pairs))
         
+        # 根据种子控制设置随机种子
+        if 种子控制 == "固定":
+            torch.manual_seed(随机种子)
+        
         # 处理每对图像
         for idx, (file_a, file_b) in enumerate(file_pairs):
+            # 如果是随机模式，每次处理前都设置新的随机种子
+            if 种子控制 == "随机":
+                torch.manual_seed(int(time.time() * 1000) + idx)
+            
             try:
                 image_a_path = os.path.join(A文件夹, file_a)
                 image_b_path = os.path.join(B文件夹, file_b)
